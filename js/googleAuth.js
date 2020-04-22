@@ -8,28 +8,30 @@ var credentials = "";
 var authorizeButton;
 var signoutButton;
 
-export function setButtons(){
+setButtons();
+
+function setButtons(){
   authorizeButton = $('#authorize_button');
   signoutButton = $('#signout_button');
   authorizeButton.click(() => {
-    authorize(credentials, listEvents, false);
     updateSigninStatus(true);
+    authorize(credentials, listEvents, false);
   });
 
   signoutButton .click(() => {
-    fs.unlink(TOKEN_PATH, () => {});
     updateSigninStatus(false);
+    fs.unlink(TOKEN_PATH, () => {});
   });
 
 }
 
 function updateSigninStatus(isSignedIn) {
   if (isSignedIn) {
-    authorizeButton.style.display = 'none';
-    signoutButton.style.display = 'block';
+    document.getElementById("authorize_button").style.display = 'none';
+    document.getElementById("signout_button").style.display = 'block';
   } else {
-    authorizeButton.style.display = 'block';
-    signoutButton.style.display = 'none';
+    document.getElementById("authorize_button").style.display = 'block';
+    document.getElementById("signout_button").style.display = 'none';
   }
 }
 
