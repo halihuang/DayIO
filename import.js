@@ -1,3 +1,4 @@
 $("#navBar").load("html/navBar.html");
-$("#todaysCard").load("html/todaysCard.html");
-$("#tomorrowsCard").load("html/tomorrowsCard.html");
+$("#assignmentsCardSlot").load("html/assignmentsCard.html");
+$("#meetingsCardSlot").load("html/meetingsCard.html");
+$("#calendarBaseSlot").load("html/CalendarBase.html");
