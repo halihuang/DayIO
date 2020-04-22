@@ -43,22 +43,29 @@ function fillCalendar() {
   document.getElementById("month").innerHTML = months[month] + " " + year;
 
   let firstRow = true;
+  let rowUsed = 0;
   for (let i = 0; i < 6; i++)
   {
+    let row = "row" + (i + 1);
+    rowUsed = 0;
     for (let j = 0; j < 7; j++) {
       let col = "slot" + ((i * 7) + j + 1);
       let date = ((i * 7) + j + 2 - firstDay);
 
       if(firstRow && j < firstDay - 1) {
-        document.getElementById(col).innerHTML = "N/a";
+        document.getElementById(col).innerHTML = "";
       } else if (date > lastDay) {
-        document.getElementById(col).innerHTML = "N/a";
+        document.getElementById(col).innerHTML = "";
       } else {
         document.getElementById(col).innerHTML = date;
+        rowUsed++;
       }
+    }
 
-      // console.log(col);
-      // console.log(date);
+    if (rowUsed === 0) {
+      document.getElementById(row).style.visibility = "collapse";
+    } else {
+      document.getElementById(row).style.visibility = "visible";
     }
 
     firstRow = false;
