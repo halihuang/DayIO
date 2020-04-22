@@ -1,8 +1,21 @@
 <!-- CalendarBase -->
 <div class="mx-auto w-75">
-  <div class="col text-center mt-5" id="month">Month</div>
 
-  <div class="table-responsive">
+  <div class="container  text-center mt-5 mb-3">
+    <div class="row">
+      <div class="col-sm">
+        <button type="button" class="btn btn-dark" id="back" onclick="back();">Back</button>
+      </div>
+      <div class="col-sm" id="month">
+        Month
+      </div>
+      <div class="col-sm">
+        <button type="button" class="btn btn-dark" id="next" onclick="next();">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive rounded">
     <table class="table table-bordered table-dark">
       <thead>
         <tr id="dayRow">
@@ -81,8 +94,6 @@
   </div>
 
   <div class="mx-auto">
-    <button type="button" class="btn btn-dark" id="back" onclick="back();">Back</button>
-    <button type="button" class="btn btn-dark" id="next" onclick="next();">Next</button>
   </div>
 </div>
 
