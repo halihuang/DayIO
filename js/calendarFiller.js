@@ -16,7 +16,7 @@ months[9] = "October";
 months[10] = "November";
 months[11] = "December";
 
-function next() {
+export function next() {
   month += 1;
   if (month > 11) {
     month = 0;
@@ -25,7 +25,7 @@ function next() {
   fillCalendar();
 }
 
-function back() {
+export function back() {
   month -= 1;
   if (month < 0) {
     month = 11;
