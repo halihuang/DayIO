@@ -5,26 +5,49 @@ const path = require('path');
 let mainWindow;
 
 const createWindow = async () => {
-  const window = new BrowserWindow({
-    show:false,
-    width: 800,
-    height: 600,
-    webPreferences: {
-      nodeIntegration: true
-    }
+  let loading = new BrowserWindow({
+    show: false,
+     frame: false,
+   });
+
+  loading.once('show', () => {
+    const mainWindow = new BrowserWindow({
+      show:false,
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true
+      }
+    });
+
+    mainWindow.webContents.once('dom-ready', () => {
+      setTimeout(() => {
+        console.log('main loaded');
+        mainWindow.show();
+        loading.hide();
+        loading.close();
+      }, 3000);
+
+    })
+    // long loading html
+    mainWindow.loadFile(path.join(__dirname, 'index.html'));
   });
 
-  window.on('ready-to-show', () => {
-    window.show();
-  });
+  loading.loadURL(path.join(__dirname, 'loading.html'));
+  loading.show();
 
-  window.on('closed', () => {
-    mainWindow = undefined;
-  });
+  // mainWindow.on('ready-to-show', () => {
+  //   mainWindow.show();
+  // });
+  // loading.on('closed', () => {
+  //   loading = undefined;
+  // })
+  //
+  // mainWindow.on('closed', () => {
+  //   mainWindow = undefined;
+  // });
 
-  await window.loadFile(path.join(__dirname, 'index.html'));
-
-  return window;
+  return mainWindow;
 }
 
 if(!app.requestSingleInstanceLock()){

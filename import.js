@@ -1,4 +1,3 @@
 $("#navBar").load("html/navBar.html");
-$("#assignmentsCardSlot").load("html/assignmentsCard.html");
-$("#meetingsCardSlot").load("html/meetingsCard.html");
-$("#calendarBaseSlot").load("html/CalendarBase.html");
+// $("#loading").fadeOut("3000");
+$("#page").load("html/CalendarBase.html");

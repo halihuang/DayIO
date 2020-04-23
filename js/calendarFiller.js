@@ -16,8 +16,6 @@ months[9] = "October";
 months[10] = "November";
 months[11] = "December";
 
-fillCalendar();
-
 function next() {
   month += 1;
   if (month > 11) {
@@ -36,7 +34,7 @@ function back() {
   fillCalendar();
 }
 
-function fillCalendar() {
+export function fillCalendar() {
   let firstDay = (new Date(year, month, 1)).getDay();
   let lastDay = (new Date(year, month + 1, 0)).getDate();
 

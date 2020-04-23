@@ -9,13 +9,13 @@
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
   <ul class="navbar-nav ml-auto">
     <li class="nav-item" data-toggle="tooltip" data-html="true" title="Access your full list of assignments.">
-      <a class="nav-link" href="#" data-toggle="modal" data-target="#assignmentsCard">Assignments</a>
+      <a class="nav-link" id="assignmentsCard" href="#" >Assignments</a>
     </li>
     <li class="nav-item" data-toggle="tooltip" data-html="true" title="Access your full list of meetings.">
-      <a class="nav-link" href="#" data-toggle="modal" data-target="#meetingsCard">Meetings</a>
+      <a class="nav-link" id="meetingsCard"  href="#" >Meetings</a>
     </li>
     <li class="nav-item" data-toggle="tooltip" data-html="true" title="Access your full calendar of events.">
-      <a class="nav-link" href="#">Calendar</a>
+      <a class="nav-link" id="calendar" href="#">Calendar</a>
     </li>
     <li class="nav-item dropdown" data-toggle="tooltip" data-html="true" title="Sign into platforms like Google and Zoom, and view local storage files.">
       <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -36,3 +36,7 @@
 </div>
 
 <script src="js/googleAuth.js"></script>
+<script type="module">
+  import allowNav from "./js/navigation.js";
+  allowNav();
+</script>
