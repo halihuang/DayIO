@@ -1,3 +1,5 @@
+import {loadCourses} from "./add.js";
+
 const ElectronGoogleOAuth2 = require('@getstation/electron-google-oauth2').default;
 const fs = require('fs');
 const readline = require('readline');
@@ -148,7 +150,7 @@ function getAccessToken(oAuth2Client, callback, credentials){
         setTimeout(refreshClassroom, x*1000);
       }
     });
-
+    loadCourses();
   }
 
   // organizes classroom assignments by date and saves them in a json

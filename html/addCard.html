@@ -14,78 +14,87 @@
           <button id="assignmentsSelector" type="button" class="btn btn-secondary">Assignment</button>
           <button id="meetingsSelector" class="btn btn-secondary">Meeting</button>
         </div>
-        <div id="assignmentsForm">
-          <div id="courseRadios" class="form-group">
-
+        <div class="mt-2" id="assignmentsForm">
+          <div id="assignmentCourseRadios" class="form-group">
+            <!-- Auto filled by JS -->
+            Hmm, something didn't load in correctly... Try reloading the app.
           </div>
           <div class="form-group">
             <label for="assignmentTitle">Assignment title:</label>
-            <input type="text" class="form-control" id="assignmentTitle" aria-describedby="assignmentTitleHelp">
+            <input type="text" class="form-control" name="assignmentTitle" aria-describedby="assignmentTitleHelp">
             <small id="assignmentTitleHelp" class="form-text text-muted">The name of your assignment.</small>
           </div>
           <div class="form-group">
             <label for="assignmentDateNotes">Assignment due date:</label>
-            <input class="form-control" id="assignmentDateSelector" name="date" placeholder="MM/DD/YYYY" type="text"/>
+            <input class="form-control" id="date" name="assignmentDateSelector" name="date" placeholder="MM/DD/YYYY" type="text"/>
             <small id="assignmentDateNotesHelp" class="form-text text-muted">What day is the assignment due?</small>
           </div>
           <div class="form-group">
             <label for="assignmentTimeNotes">Assignment due time:</label>
-            <input type="text" class="form-control" id="assignmentTimeNotes" aria-describedby="assignmentTimeNotesHelp">
+            <input type="text" class="form-control" name="assignmentTimeNotes" aria-describedby="assignmentTimeNotesHelp">
             <small id="assignmentTimeNotesHelp" class="form-text text-muted">What time is the assignment due?</small>
           </div>
           <div class="form-group">
             <label for="assignmentNotes">Assignment notes:</label>
-            <input type="text" class="form-control" id="assignmentNotes" aria-describedby="assignmentNotesHelp">
+            <input type="text" class="form-control" name="assignmentNotes" aria-describedby="assignmentNotesHelp">
             <small id="assignmentNotesHelp" class="form-text text-muted">Anything you want to jot down?</small>
           </div>
+          <button type="button small" class="btn btn-secondary" data-dismiss="modal" id="assignmentsSubmit">Submit assignment</button>
         </div>
-        <div id="meetingsForm">
-          <div id="courseRadios"  class="form-group">
+        <div class="mt-2" id="meetingsForm">
+          <div id="meetingCourseRadios"  class="form-group">
             <!-- Auto filled by JS -->
             Hmm, something didn't load in correctly... Try reloading the app.
           </div>
           <div class="form-group">
             <label for="meetingTitle">Meeting name:</label>
-            <input type="text" class="form-control" id="meetingTitle" aria-describedby="meetingTitleHelp">
+            <input type="text" class="form-control" name="meetingTitle" aria-describedby="meetingTitleHelp">
             <small id="meetingTitleHelp" class="form-text text-muted">The name of your meeting.</small>
           </div>
           <div class="form-group">
             <label for="meetingDateNotes">Meeting date:</label>
-            <input class="form-control" id="meetingDateSelector" name="date" placeholder="MM/DD/YYYY" type="text"/>
+            <input class="form-control" id="date" name="meetingDateSelector" name="date" placeholder="MM/DD/YYYY" type="text"/>
             <small id="meetingDateNotesHelp" class="form-text text-muted">What day is the meeting?</small>
           </div>
           <div class="form-group">
             <label for="meetingTimeNotes">Meeting time:</label>
-            <input type="text" class="form-control" id="meetingTimeNotes" aria-describedby="meetingTimeNotesHelp">
+            <input type="text" class="form-control" name="meetingTimeNotes" aria-describedby="meetingTimeNotesHelp">
             <small id="meetingTimeNotesHelp" class="form-text text-muted">What time is the meeting?</small>
           </div>
           <div class="form-group">
             <label for="meetingNotes">Meeting notes:</label>
-            <input type="text" class="form-control" id="meetingNotes" aria-describedby="meetingNotesHelp">
+            <input type="text" class="form-control" name="meetingNotes" aria-describedby="meetingNotesHelp">
             <small id="meetingNotesHelp" class="form-text text-muted">Want to remind yourself to dress to impress? Do so here!</small>
           </div>
           <div class="form-group">
             <label for="meetingLink">Meeting link:</label>
-            <input type="text" class="form-control" id="meetingLink" aria-describedby="meetingLinkHelp">
+            <input type="text" class="form-control" name="meetingLink" aria-describedby="meetingLinkHelp">
             <small id="meetingLinkHelp" class="form-text text-muted">Put the link to your meeting here.</small>
           </div>
+          <button type="button small" class="btn btn-secondary" data-dismiss="modal" id="meetingsSubmit">Submit meeting</button>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button small" class="btn btn-secondary" data-dismiss="modal" id="submitAddEvent">Submit</button>
       </div>
     </div>
   </div>
 </div>
 
 <script type="module">
-  import {loadAssignmentForm, loadMeetingForm, loadCourses} from './js/add.js';
+  import {returnCourses} from './js/classroom.js';
+  import {loadAssignmentForm, loadMeetingForm, loadCourses, assignmentSubmit, meetingSubmit} from './js/add.js';
   import {datePicker} from './js/datePicker.js';
   $('#assignmentsSelector').click(() => {
     loadAssignmentForm();
   });
   $('#meetingsSelector').click(() => {
     loadMeetingForm();
+  });
+  $('#assignmentsSubmit').click(() => {
+    assignmentSubmit();
+  });
+  $('#meetingsSubmit').click(() => {
+    meetingSubmit();
   });
 
   // $('#submit').click(() => {

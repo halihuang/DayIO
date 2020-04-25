@@ -25,7 +25,7 @@ export function returnMeetings(){
   });
 }
 
-export function returnCourses(){
+export async function returnCourses(){
   return new Promise((resolve, reject) => {
     fs.readFile('courses.json', (err, content) =>{
       if(err){
