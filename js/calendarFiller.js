@@ -37,9 +37,22 @@ export function back() {
   fillCalendar();
 }
 
+export function setMonth(newMonth) {
+  month = newMonth;
+}
+
+export function setYear(newYear) {
+  year = newYear;
+}
+
 export function fillCalendar() {
   let firstDay = (new Date(year, month, 1)).getDay();
   let lastDay = (new Date(year, month + 1, 0)).getDate();
+  let today = (new Date).getDate();
+
+  if (firstDay == 0) {
+    firstDay = 7;
+  }
 
   document.getElementById("month").innerHTML = months[month] + " " + year;
 
@@ -60,6 +73,12 @@ export function fillCalendar() {
       } else {
         document.getElementById(col).innerHTML = date;
         rowUsed++;
+      }
+
+      if(date == today) {
+        document.getElementById(col).style.backgroundColor = "red";
+      } else {
+        document.getElementById(col).style.backgroundColor = "#343a40";
       }
     }
 
