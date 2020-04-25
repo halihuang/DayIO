@@ -27,7 +27,7 @@ const createWindow = async () => {
         mainWindow.show();
         loading.hide();
         loading.close();
-      }, 3000);
+      }, 5000);
 
     })
     // long loading html

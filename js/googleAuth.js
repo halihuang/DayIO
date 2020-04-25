@@ -140,7 +140,7 @@ function getAccessToken(oAuth2Client, callback, credentials){
       else {
         console.log('No courses found.');
       }
-      
+
       let x = 300;  // 5 minutes
 
       // if signed in refresh every 5 minutes;
@@ -161,6 +161,17 @@ function getAccessToken(oAuth2Client, callback, credentials){
       pastDue: [],
       noDueDate: [],
     };
+    classroom.courses.list({
+      pageSize: 15
+    }, (err,res) =>{
+      fs.writeFile('courses.json', JSON.stringify(res.data), (err) => {
+        if(err){
+          console.log('couldnt save courses');
+        }
+        console.log("courses saved successfully");
+      });
+    });
+
     coursesLength = courses.length;
     loaded.courseAssignments = 0;
     loaded.courseMeetings = 0;
@@ -236,12 +247,12 @@ function getAccessToken(oAuth2Client, callback, credentials){
           return console.log("could not find course:" + err);
         }
         let courseWork = res.data.courseWork;
-        console.log('Number of coursework in ' + course.name, courseWork.length);
+        // console.log('Number of coursework in ' + course.name, courseWork.length);
         let loadedCourseWork = {count: 0};
 
         courseWork.forEach((work) =>{
           filterCourseWork(course, work, assignments, courseWork, loadedCourseWork).then((res) => {
-              console.log(res);
+              // console.log(res);
               loaded.courseAssignments++;
               if(loaded.courseAssignments == coursesLength){
                 resolve('loaded all courses');
@@ -250,7 +261,7 @@ function getAccessToken(oAuth2Client, callback, credentials){
                 reject('didnt load all courses yet');
               }
             }, (err) => {
-              console.log(err);
+              // console.log(err);
             }
           );
         });
