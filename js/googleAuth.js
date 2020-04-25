@@ -178,7 +178,7 @@ function getAccessToken(oAuth2Client, callback, credentials){
 
     courses.forEach((course) => {
       getAssignments(course, assignments).then((res) => {
-        console.log(JSON.stringify(assignments))
+        // console.log(JSON.stringify(assignments))
         fs.writeFile('classroomAssignments.json', JSON.stringify(assignments), (err) => {
           if(err){
             return console.log('couldnt save past assignments');
