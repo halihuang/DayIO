@@ -2,6 +2,7 @@ const {app, BrowserWindow} = require('electron');
 const path = require('path');
 
 
+
 let mainWindow;
 
 const createWindow = async () => {

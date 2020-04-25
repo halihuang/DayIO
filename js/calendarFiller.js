@@ -2,6 +2,9 @@ let date = new Date();
 let year = date.getFullYear()
 let month = date.getMonth()
 
+
+window.date = date;
+
 let months = new Array();
 months[0] = "January";
 months[1] = "February";
