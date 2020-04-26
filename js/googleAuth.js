@@ -28,6 +28,8 @@ function setButtons(){
   signoutButton .click(() => {
     updateSigninStatus(false);
     fs.unlink(TOKEN_PATH, () => {});
+    fs.unlink('classroomAssignments.json', () => {});
+    fs.unlink('classroomMeetings.json', () => {});
   });
 
 }
@@ -93,7 +95,6 @@ function getAccessToken(oAuth2Client, callback, credentials){
       updateSigninStatus(true);
     });
 }
-
 
 // function listEvents(auth) {
 //   const calendar = google.calendar({version: 'v3', auth});

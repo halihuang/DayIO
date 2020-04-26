@@ -1,3 +1,5 @@
+import {mergeAssignments} from "./mergeSaved.js";
+
 let date = new Date();
 let year = date.getFullYear()
 let month = date.getMonth()
@@ -45,10 +47,13 @@ export function setYear(newYear) {
   year = newYear;
 }
 
-export function fillCalendar() {
+export async function fillCalendar() {
   let firstDay = (new Date(year, month, 1)).getDay();
   let lastDay = (new Date(year, month + 1, 0)).getDate();
   let today = (new Date).getDate();
+
+  let assignments = await Promise.resolve(mergeAssignments());
+
 
   if (firstDay == 0) {
     firstDay = 7;
@@ -66,17 +71,32 @@ export function fillCalendar() {
       let col = "slot" + ((i * 7) + j + 1);
       let date = ((i * 7) + j + 2 - firstDay);
 
+      let assignmentsString = "";
+      let meetingString = "";
+
+      for (let k = 0; k < assignments.due.length; k++) {
+        if (assignments.due[k].dueDate.month == month + 1 && assignments.due[k].dueDate.year == year && assignments.due[k].dueDate.day == date) {
+          assignmentsString += '<div class="alert alert-warning small" role="alert">' + assignments.due[k].title + '</div>';
+        }
+      }
+
+      for (let k = 0; k < assignments.pastDue.length; k++) {
+        if (assignments.pastDue[k].dueDate.month == month + 1 && assignments.pastDue[k].dueDate.year == year && assignments.pastDue[k].dueDate.day == date) {
+          assignmentsString += '<div class="alert alert-secondary small" role="alert">' + assignments.pastDue[k].title + '</div>';
+        }
+      }
+
       if(firstRow && j < firstDay - 1) {
         document.getElementById(col).innerHTML = "";
       } else if (date > lastDay) {
         document.getElementById(col).innerHTML = "";
       } else {
-        document.getElementById(col).innerHTML = date;
+        document.getElementById(col).innerHTML = date + assignmentsString;
         rowUsed++;
       }
 
       if(date == today) {
-        document.getElementById(col).style.backgroundColor = "red";
+        document.getElementById(col).style.backgroundColor = "#007bff";
       } else {
         document.getElementById(col).style.backgroundColor = "#343a40";
       }
