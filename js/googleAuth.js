@@ -126,12 +126,10 @@ function getAccessToken(oAuth2Client, callback, credentials){
   function refreshClassroom(auth) {
     classroom = google.classroom({version: 'v1', auth});
     classroom.courses.list({
-      pageSize: 10,
+      pageSize: 15,
     }, (err, res) => {
       if (err) {
-        fs.unlink(TOKEN_PATH, () => {
-          return console.log('The API returned an error: ' + err);
-        });
+        return console.log('The API returned an error: ' + err);
       }
       const courses = res.data.courses;
 
@@ -177,10 +175,9 @@ function getAccessToken(oAuth2Client, callback, credentials){
     coursesLength = courses.length;
     loaded.courseAssignments = 0;
     loaded.courseMeetings = 0;
-
     courses.forEach((course) => {
       getAssignments(course, assignments).then((res) => {
-        // console.log(JSON.stringify(assignments))
+        console.log(assignments);
         fs.writeFile('classroomAssignments.json', JSON.stringify(assignments), (err) => {
           if(err){
             return console.log('couldnt save past assignments');
@@ -241,38 +238,44 @@ function getAccessToken(oAuth2Client, callback, credentials){
 
   function getAssignments(course, assignments, counter){
     return new Promise((resolve, reject) => {
-      classroom.courses.courseWork.list({
-        pageSize:15,
-        courseId: course.id,
-      }, (err, res) => {
-        if(err){
-          return console.log("could not find course:" + err);
-        }
-        let courseWork = res.data.courseWork;
-        // console.log('Number of coursework in ' + course.name, courseWork.length);
-        let loadedCourseWork = {count: 0};
-
-        courseWork.forEach((work) =>{
-          filterCourseWork(course, work, assignments, courseWork, loadedCourseWork).then((res) => {
-              // console.log(res);
-              loaded.courseAssignments++;
-              if(loaded.courseAssignments == coursesLength){
-                resolve('loaded all courses');
+      try{
+        classroom.courses.courseWork.list({
+          pageSize:20,
+          courseId: course.id,
+        }, (err, res) => {
+          if(err){
+            return console.log("could not find course:" + err);
+          }
+          let courseWork = res.data.courseWork;
+          console.log('Number of coursework in ' + course.name, courseWork.length);
+          let loadedCourseWork = {count: 0};
+          courseWork.forEach((work) =>{
+            filterCourseWork(course, work, assignments, courseWork, loadedCourseWork).then((res) => {
+                // console.log(res);
+                loaded.courseAssignments++;
+                if(loaded.courseAssignments == coursesLength){
+                  resolve('loaded all courses');
+                }
+                else{
+                  reject('didnt load all courses yet');
+                }
+              }, (err) => {
+                // console.log(err);
               }
-              else{
-                reject('didnt load all courses yet');
-              }
-            }, (err) => {
-              // console.log(err);
-            }
-          );
+            );
+          });
         });
-      });
+      }
+      catch(err){
+        console.log(err);
+        reject('didnt load all courses yet');
+      }
     });
   }
 
   function filterCourseWork(course, work, assignments, allCourseWork, counter){
     return new Promise((resolve, reject) =>{
+      try{
         classroom.courses.courseWork.studentSubmissions.list({
           courseId: course.id,
           courseWorkId: work.id
@@ -283,7 +286,7 @@ function getAccessToken(oAuth2Client, callback, credentials){
           let submission = res.data.studentSubmissions[0];
           let assignment = {
             courseName: course.name,
-            courseId:work.id,
+            courseWorkId:work.id,
             title: work.title,
             description: work.description,
             link: work.alternateLink,
@@ -314,6 +317,11 @@ function getAccessToken(oAuth2Client, callback, credentials){
             reject("Coursework loaded so far::: " + counter.count + ' in ' + course.name);
           }
         });
+      }
+      catch(err){
+          console.log(err);
+          reject();
+      }
       });
   }
 
@@ -340,7 +348,7 @@ function getAccessToken(oAuth2Client, callback, credentials){
     return true;
   }
 
-  function sortBasedOnTime(arr, inserted){
+  export function sortBasedOnTime(arr, inserted){
     if(arr.length){
       for(let i = 0; i < arr.length; i++){
         let item = arr[i];

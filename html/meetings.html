@@ -1,2 +1,90 @@
 
 <!-- Meeting's Card -->
+
+<div id="meetingsPage">
+  <center><h1 class="display-4 mt-2">Meetings</h1></center>
+  <div id="thePage">
+  <div class="block mr-5 ml-5 mt-3">
+  <div v-for="item in meetings">
+    <div class="card">
+      <div class="card-header" v-bind:id="item.courseWorkId">
+        <h5 class="mb-0">
+          <button class="btn btn-link" data-toggle="collapse" v-bind:data-target="'#collapse' + item.courseWorkId" aria-expanded="false"  v-bind:aria-controls="'collapse + item.courseWorkId'">
+            <h5 class="mt-2">{{ item.title }} &emsp;
+            <span class= "text-info">Meeting in: {{getDateFromToday(item)}}</span>
+
+            </h5>
+          </button>
+        </h5>
+      </div>
+
+      <div v-bind:id="'collapse' + item.courseWorkId" class="collapse" v-bind:aria-labelledby="item.courseWorkId">
+
+
+
+        <div class="card-body">
+          <span><h5 class="mt-2">Course: &nbsp{{ item.courseName }}</h5></span>
+
+          <p v-if="item.description"><b>Meetings Details:</b> {{item.notes}}</p>
+          <p v-else>No meetings details</p>
+
+          <p><b>Meeting Time:</b> {{getDate(item)}}</p>
+        </div>
+
+
+        <ul v-if="item.link" class="list-group list-group-flush">
+          <li class="list-group-item">
+          </li>
+          <li class="list-group-item">
+            <span> Meetings Link: <a target="_blank" href="item.link"> {{item.link}}</a></span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  </div>
+</div>
+
+<script type="module">
+  window.Vue = require('vue/dist/vue.js');
+  import {mergeMeetings} from './js/mergeSaved.js';
+
+  const meetingsPage = new Vue({
+    el: '#meetingsPage',
+    data: {
+      meetings: [{
+        title:''
+      }],
+
+
+    },
+    methods: {
+      loadMeetings: function(){
+        mergeMeetings().then((res) => {
+          console.log("meetings", res);
+          this.meetings = res;
+        })
+      },
+
+      getDateFromToday: function(meetings){
+        console.log(meetings);
+        let meetingsDue = moment([meetings.dueDate.year, meetings.dueDate.month - 1, meetings.dueDate.day, meetings.dueTime.hours, meetings.dueTime.minutes]);
+        let today = moment();
+
+        return meetingsDue.from(today);
+      },
+
+      getDate: function(meetings){
+        let meetingsDue = moment([meetings.weekDay, meetings.dueDate.month - 1, meetings.dueDate.day, meetings.dueTime.hours, meetings.dueTime.minutes]);
+        return meetingsDue.format('MMMM Do YYYY, h:mma');
+      }
+    },
+    mounted(){
+      this.loadMeetings();
+    }
+  });
+
+
+</script>

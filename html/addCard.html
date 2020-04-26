@@ -31,7 +31,7 @@
           </div>
           <div class="form-group">
             <label for="assignmentTimeNotes">Assignment due time:</label>
-            <input type="text" class="form-control" name="assignmentTimeNotes" aria-describedby="assignmentTimeNotesHelp">
+            <input type="text" class="form-control timepicker" name="assignmentTimeNotes" aria-describedby="assignmentTimeNotesHelp">
             <small id="assignmentTimeNotesHelp" class="form-text text-muted">What time is the assignment due?</small>
           </div>
           <div class="form-group">
@@ -58,7 +58,7 @@
           </div>
           <div class="form-group">
             <label for="meetingTimeNotes">Meeting time:</label>
-            <input type="text" class="form-control" name="meetingTimeNotes" aria-describedby="meetingTimeNotesHelp">
+            <input type="text" class="form-control timepicker" name="meetingTimeNotes" aria-describedby="meetingTimeNotesHelp">
             <small id="meetingTimeNotesHelp" class="form-text text-muted">What time is the meeting?</small>
           </div>
           <div class="form-group">
@@ -95,6 +95,14 @@
   });
   $('#meetingsSubmit').click(() => {
     meetingSubmit();
+  });
+  $('.timepicker').timepicker({
+    timeFormat: 'h:mm p',
+    interval: 60,
+    defaultTime: '23:59',
+    dynamic: false,
+    dropdown: true,
+    scrollbar: true
   });
 
   // $('#submit').click(() => {

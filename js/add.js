@@ -23,58 +23,104 @@ export async function loadCourses() {
     '"><label class="form-check-label" for="' + courses.courses[i].name + '">' + courses.courses[i].name + '</label></div>'
   }
 
-  console.log(coursesHTML);
+  // console.log(coursesHTML);
 
   document.getElementById("assignmentCourseRadios").innerHTML = coursesHTML;
   document.getElementById("meetingCourseRadios").innerHTML = coursesHTML;
 }
 
-export async function assignmentSubmit() {
-  let file = await Promise.resolve(returnAssignments());
+export function assignmentSubmit() {
+  let assignments
+  fs.readFile('customAssignments.json', (err,res) => {
+    if(err){
+      console.log(err);
+    }
+    else{
+      assignments= JSON.parse(res);
+    }
+    // console.log("parsed", assignments);
+    let assignment = {
+      courseName: $('input[name=availableCourses]:checked').val(),
+      courseWorkId: Math.floor(Math.random() * (99999999999 - 10000000000 + 1)) + 10000000000,
+      title: $('input[name=assignmentTitle]').val(),
+      dueDate: {
+        year: parseInt($('input[name=assignmentDateSelector]').val().substring(6, 10)),
+        month: parseInt($('input[name=assignmentDateSelector]').val().substring(0, 2)),
+        day: parseInt($('input[name=assignmentDateSelector]').val().substring(3, 5))
+      },
+      dueTime: createTimeObject($('input[name=assignmentTimeNotes]').val()),
+      materials: $('input[name=assignmentNotes]').val(),
+    };
+    if(!assignments){
+      console.log("reset")
+      assignments = [];
+    }
 
-  let assignment = {
-    courseName: $('input[name=availableCourses]:checked').val(),
-    courseWorkId: Math.floor(Math.random() * (99999999999 - 10000000000 + 1)) + 10000000000,
-    title: $('input[name=assignmentTitle]').val(),
-    dueDate: {
-      year: $('input[name=assignmentDateSelector]').val().substring(6, 10),
-      month: $('input[name=assignmentDateSelector]').val().substring(0, 2),
-      day: $('input[name=assignmentDateSelector]').val().substring(3, 5)
-    },
-    dueTime: $('input[name=assignmentTimeNotes]').val(),
-    materials: $('input[name=assignmentNotes]').val(),
-  };
+    // console.log("pushed assignment",assignment);
+    assignments.push(assignment);
+    // console.log("written file", assignments);
 
-
-
-  fs.writeFile('customAssignments.json', JSON.stringify(file).concat(JSON.stringify(assignment)), (err) => {//whatever u wanna do after finishing writing
-  })
+    fs.writeFile('customAssignments.json', JSON.stringify(assignments), (err) => {
+      //whatever u wanna do after finishing writing
+    })
+  });
 }
 
 export async function meetingSubmit() {
-  let file = await Promise.resolve(returnMeetings());
+  fs.readFile('customMeetings.json', (err,res)=>{
+    let meetings;
+    if(err){
+      console.log(err);
+    }
+    else{
+      meetings = JSON.parse(res);
+    }
+    let meeting = {
+      courseName: $('input[name=availableCourses]:checked').val(),
+      courseWorkId: Math.floor(Math.random() * (99999999999 - 10000000000 + 1)) + 10000000000,
+      title: $('input[name=meetingTitle]').val(),
+      dueDate: {
+        year: parseInt($('input[name=meetingDateSelector]').val().substring(6, 10)),
+        month: parseInt($('input[name=meetingDateSelector]').val().substring(0, 2)),
+        day: parseInt($('input[name=meetingDateSelector]').val().substring(3, 5))
+      },
+      dueTime: createTimeObject($('input[name=meetingTimeNotes]').val()),
+      notes: $('input[name=meetingNotes]').val(),
+      link: $('input[name=meetingLink]').val(),
+    };
+    if(!meetings){
+      meetings = [];
+    }
+    meetings.push(meeting);
+    fs.writeFile('customMeetings.json', JSON.stringify(meetings), (err) => {
+      if(err){
+        console.log('couldnt read', err);
+      }//whatever u wanna do after finishing writing
+    })
 
-  let meeting = {
-    courseName: $('input[name=availableCourses]:checked').val(),
-    courseWorkId: Math.floor(Math.random() * (99999999999 - 10000000000 + 1)) + 10000000000,
-    title: $('input[name=meetingTitle]').val(),
-    date: {
-      year: $('input[name=meetingDateSelector]').val().substring(6, 10),
-      month: $('input[name=meetingDateSelector]').val().substring(0, 2),
-      day: $('input[name=meetingDateSelector]').val().substring(3, 5)
-    },
-    time: $('input[name=meetingTimeNotes]').val(),
-    notes: $('input[name=meetingNotes]').val(),
-    link: $('input[name=meetingLink]').val(),
-  };
-
-
-
-  fs.writeFile('customMeetings.json', JSON.stringify(file).concat(JSON.stringify(meeting)), (err) => {//whatever u wanna do after finishing writing
   })
 }
 
-export async function returnAssignments(){
+function createTimeObject(timeStr){
+  console.log(timeStr.substring(timeStr.length - 2));
+  let time = {}
+  if(timeStr.indexOf(':') == 1){
+    time.hours = parseInt(timeStr.charAt(0));
+    time.minutes = parseInt(timeStr.substring(2,4));
+
+  }
+  else{
+    time.hours = parseInt(timeStr.substring(0,2));
+    time.minutes = parseInt(timeStr.substring(3,5));
+  }
+  if(timeStr.substring(timeStr.length - 2) == 'PM'){
+    time.hours += 12;
+  }
+  return time;
+}
+
+
+function returnAssignments(){
   return new Promise((resolve, reject) => {
     fs.readFile('customAssignments.json', (err, content) =>{
       if(err){
@@ -86,7 +132,7 @@ export async function returnAssignments(){
   });
 }
 
-export async function returnMeetings(){
+function returnMeetings(){
   return new Promise((resolve, reject) => {
     fs.readFile('customMeetings.json', (err, content) =>{
       if(err){

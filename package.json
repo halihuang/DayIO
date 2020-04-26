@@ -20,8 +20,9 @@
   "dependencies": {
     "@getstation/electron-google-oauth2": "^2.1.0",
     "googleapis": "^39.2.0",
+    "jquery-timepicker": "^1.3.3",
     "linkifyjs": "^2.1.9",
-    "materialize-css": "^1.0.0-rc.2",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "vue": "^2.6.11"
   }
 }

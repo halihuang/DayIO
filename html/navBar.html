@@ -34,8 +34,9 @@
   </ul>
 </div>
 
-<script src="js/googleAuth.js"></script>
+<script type="module" src="js/googleAuth.js"></script>
 <script type="module">
-  import allowNav from "./js/navigation.js";
+  import {allowNav, externalLinks} from "./js/navigation.js";
   allowNav();
+  externalLinks();
 </script>
