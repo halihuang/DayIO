@@ -1,5 +1,5 @@
 # Day.io for SVH 
-Vision processing code written in python3 for 2020 FRC Competition 
+A simple meeting and assignment organizer for students! 
 ### dependencies 
 all dependencies are included inside of the program 
 ### running the program 
