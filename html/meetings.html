@@ -11,8 +11,7 @@
         <h5 class="mb-0">
           <button class="btn btn-link" data-toggle="collapse" v-bind:data-target="'#collapse' + item.courseWorkId" aria-expanded="false"  v-bind:aria-controls="'collapse + item.courseWorkId'">
             <h5 class="mt-2">{{ item.title }} &emsp;
-            <span class= "text-info">Meeting in: {{getDateFromToday(item)}}</span>
-
+            <span v-if="item.weekday" class= "text-info">Meeting in: {{getDateFromToday(item)}}</span>
             </h5>
           </button>
         </h5>
@@ -23,12 +22,20 @@
 
 
         <div class="card-body">
-          <span><h5 class="mt-2">Course: &nbsp{{ item.courseName }}</h5></span>
+          <div class="d-md-flex flex-md-row justify-content-between">
+            <span style="justify-self: start !important;"><h5 class="mt-2" >Course: &nbsp{{ item.courseName }}</h5></span>
+            <div>            
+              <button class="btn btn-danger" @click="removeMeeting(item)">Remove</button>
+              <button class="btn btn-primary" @click="editMeeting(item)" data-toggle="modal" data-target="#addCard">Edit</button>
+            </div>
+          </div>
 
-          <p v-if="item.description"><b>Meetings Details:</b> {{item.notes}}</p>
+          <p v-if="item.notes"><b>Meetings Details:</b> {{item.notes}}</p>
           <p v-else>No meetings details</p>
 
-          <p><b>Meeting Time:</b> {{getDate(item)}}</p>
+          <p v-if="item.weekday"><b>Next Meeting Time:</b> {{getDate(item)}}</p>
+          <p  v-if="item.weekday"><b>Meets:</b> {{getWeekly(item)}}<b></b></p>
+          <p v-if="item.announcement"><b>Classroom Meeting Announcement:</b>{{item.announcement}}</p>
         </div>
 
 
@@ -48,37 +55,49 @@
 </div>
 
 <script type="module">
-  window.Vue = require('vue/dist/vue.js');
-  import {mergeMeetings} from './js/mergeSaved.js';
+  import {mergeMeetings, removeMeeting} from './js/classroom.js';
+  import {editMeeting} from "./js/form.js"
+  import {getMoment} from "./js/sorting_utils.js"
 
   const meetingsPage = new Vue({
     el: '#meetingsPage',
     data: {
-      meetings: [{
-        title:''
-      }],
+      meetings: [],
 
 
     },
     methods: {
       loadMeetings: function(){
-        mergeMeetings().then((res) => {
-          console.log("meetings", res);
-          this.meetings = res;
-        })
+          this.meetings = mergeMeetings()
+          // console.log(this.meetings)
       },
 
       getDateFromToday: function(meetings){
-        console.log(meetings);
-        let meetingsDue = moment([meetings.dueDate.year, meetings.dueDate.month - 1, meetings.dueDate.day, meetings.dueTime.hours, meetings.dueTime.minutes]);
+        // console.log(meetings);
+        let meetingsDue = getMoment(meetings)
+        // console.log(meetingsDue)
         let today = moment();
-
-        return meetingsDue.from(today);
+        if(meetingsDue.isValid()){
+          // console.log("valid date")
+          return meetingsDue.from(today);
+        }
+        return "undefined"
       },
 
-      getDate: function(meetings){
-        let meetingsDue = moment([meetings.weekDay, meetings.dueDate.month - 1, meetings.dueDate.day, meetings.dueTime.hours, meetings.dueTime.minutes]);
+      getDate: function(meeting){
+        let meetingsDue = getMoment(meeting)
         return meetingsDue.format('MMMM Do YYYY, h:mma');
+      },
+      getWeekly: function(meeting){
+        let meetingsDue = getMoment(meeting)
+        return meetingsDue.format('dddd, h:mma');
+      },
+      removeMeeting: function(meeting){
+        removeMeeting(meeting)
+        this.loadMeetings()
+      },
+      editMeeting: function(meeting){
+        editMeeting(meeting);
       }
     },
     mounted(){

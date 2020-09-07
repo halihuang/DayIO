@@ -11,7 +11,6 @@
           <button class="btn btn-link" data-toggle="collapse" v-bind:data-target="'#collapse' + item.courseWorkId" aria-expanded="false"  v-bind:aria-controls="'collapse + item.courseWorkId'">
             <h5 class="mt-2">{{ item.title }} &emsp;
             <span class= "text-info">Due: {{getDateFromToday(item)}}</span>
-
             </h5>
           </button>
         </h5>
@@ -22,8 +21,14 @@
 
 
         <div class="card-body">
-          <span><h5 class="mt-2">Course: &nbsp{{ item.courseName }}</h5></span>
-
+          <div class="d-md-flex flex-md-row justify-content-between">
+            <span style="justify-self: start !important;"><h5 class="mt-2" >Course: &nbsp{{ item.courseName }}</h5></span>
+            <div>            
+              <button class="btn btn-danger" @click="removeAssignment(item)">Remove</button>
+              <button class="btn btn-primary" @click="editAssignment(item)" data-toggle="modal" data-target="#addCard">Edit</button>
+            </div>
+          </div>
+          
           <p v-if="item.description"><b>Assignment Details:</b> {{item.description}}</p>
           <p v-else>No assignment details</p>
 
@@ -55,33 +60,34 @@
 </div>
 
 <script type="module">
-  window.Vue = require('vue/dist/vue.js');
-  import {mergeAssignments} from './js/mergeSaved.js';
-  import {returnAssignments} from './js/classroom.js';
+  import {mergeAssignments, removeAssignment} from './js/classroom.js';
+  import {editAssignment} from "./js/form.js"
 
-
-  const assignmentsPage = new Vue({
+  window.assignmentsPage = new Vue({
     el: '#assignmentsPage',
     data: {
-      assignments: [{
-        title:''
-      }],
+      assignments: [],
 
 
     },
     methods: {
       loadAssignments: function(){
-        returnAssignments().then((res) => {
-          console.log(res.due);
-          console.log(res);
-        });
-        mergeAssignments().then((res) => {
-          console.log("assignments", res.due);
-          this.assignments = res.due;
-        })
+          var assignments = mergeAssignments().due
+          this.assignments = assignments.filter((assignment) => {
+            var hidden = localStorage.getItem("hiddenClassAssignments");
+            if(hidden){
+              for(item of hidden){
+                if(assignment.courseWorkId === item.courseWorkId){
+                  return false;
+                }
+              }
+              return true;
+            }
+            return true;
+          })
+          console.log("assignments", this.assignments);
       },
       getDateFromToday: function(assignment){
-        console.log(assignment);
         let assignmentDue = moment([assignment.dueDate.year, assignment.dueDate.month - 1, assignment.dueDate.day, assignment.dueTime.hours, assignment.dueTime.minutes]);
         let today = moment();
         return assignmentDue.from(today);
@@ -90,6 +96,13 @@
       getDate: function(assignment){
         let assignmentDue = moment([assignment.dueDate.year, assignment.dueDate.month - 1, assignment.dueDate.day, assignment.dueTime.hours, assignment.dueTime.minutes]);
         return assignmentDue.format('MMMM Do YYYY, h:mma');
+      },
+      removeAssignment: function(assignment){
+        removeAssignment(assignment)
+        this.loadAssignments()
+      },
+      editAssignment: function(assignment){
+        editAssignment(assignment);
       }
     },
     mounted(){

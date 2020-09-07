@@ -1,7 +1,6 @@
 
 const page = $('#page');
 let currentPage = "html/calendarBase.html"
-  const shell = require('electron').shell;
 
 export function allowNav(){
   $("#assignments").click(() => {
@@ -15,16 +14,6 @@ export function allowNav(){
   });
 }
 
-
-export function externalLinks(){
-
-
-  // assuming $ is jQuery
-  $(document).on('click', 'a[href^="http"]', function(event) {
-      event.preventDefault();
-      shell.openExternal(this.href);
-  });
-}
 
 function navigateTo(newPage){
     if(newPage == currentPage){

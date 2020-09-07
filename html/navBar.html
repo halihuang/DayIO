@@ -22,8 +22,8 @@
         Settings
       </a>
       <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-        <a class="dropdown-item" id="authorize_button" style="display:block" href="#" data-toggle="modal" data-target="#redirectCard">Google Sign In</a>
-        <a class="dropdown-item" id="signout_button" style="display:none;" href="#">Google Sign Out</a>
+        <a class="dropdown-item" id="authorize_button" style="display:block" >Google Sign In</a>
+        <a class="dropdown-item" id="signout_button" style="display:none;">Google Sign Out</a>
       </div>
     </li>
     <li class="nav-item" data-toggle="tooltip" data-html="true" title="Access your full calendar of events.">
@@ -34,7 +34,6 @@
 
 <script type="module" src="js/googleAuth.js"></script>
 <script type="module">
-  import {allowNav, externalLinks} from "./js/navigation.js";
+  import {allowNav} from "./js/navigation.js";
   allowNav();
-  externalLinks();
 </script>

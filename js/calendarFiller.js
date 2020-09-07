@@ -1,4 +1,4 @@
-import {mergeAssignments} from "./mergeSaved.js";
+import {mergeAssignments} from "./classroom.js";
 
 let date = new Date();
 let year = date.getFullYear()
@@ -52,7 +52,7 @@ export async function fillCalendar() {
   let lastDay = (new Date(year, month + 1, 0)).getDate();
   let today = (new Date).getDate();
 
-  let assignments = await Promise.resolve(mergeAssignments());
+  let assignments = mergeAssignments();
 
 
   if (firstDay == 0) {

@@ -1,43 +1,61 @@
-import {loadCourses} from "./add.js";
+import {sortDueDates} from "./sorting_utils.js"
 
-const ElectronGoogleOAuth2 = require('@getstation/electron-google-oauth2').default;
-const fs = require('fs');
-const readline = require('readline');
-const {google} = require('googleapis');
-
-const TOKEN_PATH = 'token.json';
-const SCOPE = ['https://www.googleapis.com/auth/classroom.courses.readonly',
- 'https://www.googleapis.com/auth/classroom.coursework.me.readonly', 'https://www.googleapis.com/auth/classroom.announcements.readonly'];
+const SCOPES = "https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.coursework.me.readonly https://www.googleapis.com/auth/classroom.announcements.readonly";
+var CLIENT_ID = "758516973815-0vsh34nl27ga3ig82g02fmffrjdenbgp.apps.googleusercontent.com";
+var API_KEY = "AIzaSyDPlWDf4fvnzPBOyV2Fn_aQA84VD3fkO_o";
+var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/classroom/v1/rest"]
 var classroom;
-var credentials = "";
 var authorizeButton;
 var signoutButton;
-var coursesLength;
-var loaded = {}
 
-setButtons();
+
+$("document").ready(() => {
+  gapi.load('client:auth2', initClient);
+  // console.log("gapi client open")
+})
+
+function initClient() {
+  gapi.client.init({
+    apiKey: API_KEY,
+    clientId: CLIENT_ID,
+    discoveryDocs: DISCOVERY_DOCS,
+    scope: SCOPES
+  }).then(function () {
+    // Listen for sign-in state changes.
+    gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+    console.log("listening for signin")
+    // Handle the initial sign-in state.
+    updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+    setButtons();
+  }, function(error) {
+      console.log("error initializing gapi client", error)
+  });
+}
 
 
 function setButtons(){
   authorizeButton = $('#authorize_button');
   signoutButton = $('#signout_button');
   authorizeButton.click(() => {
-    authorize(credentials, refreshClassroom, false);
+    gapi.auth2.getAuthInstance().signIn();
+    console.log("signin")
   });
 
-  signoutButton .click(() => {
+  signoutButton.click(() => {
     updateSigninStatus(false);
-    fs.unlink(TOKEN_PATH, () => {});
-    fs.unlink('classroomAssignments.json', () => {});
-    fs.unlink('classroomMeetings.json', () => {});
+    gapi.auth2.getAuthInstance().signOut();
+    console.log("signout")
   });
-
 }
+
+
+
 
 function updateSigninStatus(isSignedIn) {
   if (isSignedIn) {
     document.getElementById("authorize_button").style.display = 'none';
     document.getElementById("signout_button").style.display = 'block';
+    refreshClassroom();
   } else {
     document.getElementById("authorize_button").style.display = 'block';
     document.getElementById("signout_button").style.display = 'none';
@@ -46,245 +64,149 @@ function updateSigninStatus(isSignedIn) {
 }
 
 
-fs.readFile('credentials.json', (err, content) => {
-  if (err) return console.log('Error loading client secret file:', err);
-  // Authorize a client with credentials, then call the Google Calendar API.
-  credentials = JSON.parse(content);
-  authorize(credentials, refreshClassroom, true);
-});
-
-
-function authorize(credentials, callback, start) {
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
-  const oAuth2Client = new google.auth.OAuth2(
-      client_id, client_secret, redirect_uris[0]);
-
-  // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err){
-      if(!start){
-         return getAccessToken(oAuth2Client, callback, credentials);
-      }
-      console.log("no token.json found");
+  async function refreshClassroom() {
+    console.log("getting courses")
+    classroom = gapi.client.classroom;
+    var courses = await getCourses();
+    if (courses && courses.length) {
+      await getCourseInfo(courses);
     }
-    oAuth2Client.setCredentials(JSON.parse(token));
-    callback(oAuth2Client);
-    updateSigninStatus(true);
-  });
-}
+    else {
+      console.log('No courses found.');
+    }
 
+    let x = 300;  // 5 minutes
 
-function getAccessToken(oAuth2Client, callback, credentials){
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
-  const myApiOauth = new ElectronGoogleOAuth2(
-    client_id,
-    client_secret,
-    SCOPE
-  );
+    // if signed in refresh every 5 minutes;
+    // if(gapi.auth2.getAuthInstance().isSignedIn.get()){
+    //   setTimeout(refreshClassroom, x*1000);
+    // }
+  }
 
-
-  myApiOauth.openAuthWindowAndGetTokens()
-    .then(token => {
-      oAuth2Client.setCredentials(token);
-      // Store the token to disk for later program executions
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) return console.error(err);
-        console.log('Token stored to', TOKEN_PATH);
-      });
-      callback(oAuth2Client);
-      updateSigninStatus(true);
-    });
-}
-
-// function listEvents(auth) {
-//   const calendar = google.calendar({version: 'v3', auth});
-//   calendar.events.list({
-//     calendarId: 'primary',
-//     timeMin: (new Date()).toISOString(),
-//     maxResults: 10,
-//     singleEvents: true,
-//     orderBy: 'startTime',
-//   }, (err, res) => {
-//     if (err) {
-//       fs.unlink(TOKEN_PATH, () => {
-//         return console.log('The API returned an error: ' + err);
-//       });
-//     }
-//     const events = res.data.items;
-//     window.events = events;
-//     if (events.length) {
-//       console.log('Upcoming 10 events:');
-//       events.map((event, i) => {
-//         const start = event.start.dateTime || event.start.date;
-//         console.log(`${start} - ${event.summary}`);
-//       });
-//     } else {
-//       console.log('No upcoming events found.');
-//     }
-//   });
-// }
-
-  function refreshClassroom(auth) {
-    classroom = google.classroom({version: 'v1', auth});
-    classroom.courses.list({
-      pageSize: 15,
-    }, (err, res) => {
-      if (err) {
-        return console.log('The API returned an error: ' + err);
+  async function getCourses(){
+    var res = await classroom.courses.list({
+      pageSize: 20,
+    })
+    var courses = res.result.courses;
+    courses = courses.filter((course) => {
+      if(course.courseState == "ARCHIVED"){
+        return false;
       }
-      const courses = res.data.courses;
-
-      if (courses && courses.length) {
-        // console.log('Work:');
-        getClassroomInfo(courses);
-      }
-      else {
-        console.log('No courses found.');
-      }
-
-      let x = 300;  // 5 minutes
-
-      // if signed in refresh every 5 minutes;
-      if(window.signedIn){
-        setTimeout(refreshClassroom, x*1000);
-      }
-    });
-    loadCourses();
+      return true;
+    })
+    return courses;
   }
 
   // organizes classroom assignments by date and saves them in a json
-  function getClassroomInfo(courses){
-    var meetings = {
-        data: []
-    };
-    var assignments = {
+  async function getCourseInfo(courses){
+    localStorage.setItem('courses', JSON.stringify(courses));
+    var assignments = await getAssignments(courses)
+    localStorage.setItem('classAssignments', JSON.stringify(assignments));
+    var meetings = await getMeetings(courses)
+    localStorage.setItem('classMeetings', JSON.stringify(meetings));
+    console.log("got course info")
+  }
+
+  async function getMeetings(courses){
+    var meetings = [];
+    for(var course of courses){
+      var res = await classroom.courses.announcements.list({
+        courseId: course.id,
+        pageSize:10,
+      })
+      let announcements = res.result.announcements;
+      for(let announcement of announcements){
+        if(announcement.text.includes('.zoom.') || announcement.text.includes('meet.google.com')){
+          // console.log(announcement.text)
+          let meetingLink =  linkify.find(announcement.text)[0].href;
+          let meeting = {courseName: course.name, link: meetingLink, announcement: announcement.text};
+          meetings.unshift(meeting);
+          break;
+        }
+        else if(announcement.materials && linkInMaterials(announcement)){
+          let meetingLink = announcement.materials[0].link.url;
+          let meeting = {courseName: course.name, link: meetingLink, announcement: announcement.text};
+          meetings.unshift(meeting);
+          break;
+        }
+      }
+    }
+    return meetings;
+  }
+
+  function linkInMaterials(announcement){
+    var filtered = announcement.materials.filter((material) => {
+      if(material.link && (material.link.url.includes('.zoom.') || material.link.url.includes('meet.google.com'))){
+        return true;
+      }
+      return false;
+    })
+    if(filtered.length > 0){
+      return true;
+    }
+    return false;
+  }
+
+
+  async function getAssignments(courses){
+    var assignmentPromises = await courses.map(async(course) => { 
+      var courseWork = await getCourseWork(course);
+      if(courseWork === undefined){
+        console.log(course.name)
+      }
+      var workPromises = await courseWork.map(async (courseWork) => {
+        var filteredWork = await labelCourseWork(course, courseWork);
+        return filteredWork;
+      })
+      courseWork = await Promise.all(workPromises);
+      return courseWork;
+    });
+    var courseAssignments = await Promise.all(assignmentPromises);
+    var sortedAssignments = {
       due: [],
       pastDue: [],
-      noDueDate: [],
-    };
-    classroom.courses.list({
-      pageSize: 15
-    }, (err,res) =>{
-      fs.writeFile('courses.json', JSON.stringify(res.data), (err) => {
-        if(err){
-          console.log('couldnt save courses');
+      noDueDate: []
+    }
+    for(var courseWork of courseAssignments){
+      for(var assignment of courseWork){
+        if(!assignment.submitted){
+          if(assignment.dueDate == undefined){
+            sortedAssignments.noDueDate.push(assignment);
+          }
+          else{
+            sortDueDates(assignment, sortedAssignments);
+          }
         }
-        console.log("courses saved successfully");
-      });
-    });
-
-    coursesLength = courses.length;
-    loaded.courseAssignments = 0;
-    loaded.courseMeetings = 0;
-    courses.forEach((course) => {
-      getAssignments(course, assignments).then((res) => {
-        console.log(assignments);
-        fs.writeFile('classroomAssignments.json', JSON.stringify(assignments), (err) => {
-          if(err){
-            return console.log('couldnt save past assignments');
-          }
-          console.log("classroom assignments saved successfully");
-        });
-      }, (err) => {
-
-      });
-      getMeetings(course, meetings).then((res) => {
-        // console.log(JSON.stringify(meetings.data));
-        fs.writeFile('classroomMeetings.json', JSON.stringify(meetings.data), (err) => {
-          if(err){
-            return console.log('couldnt save past assignments');
-          }
-          console.log("classroom meetings saved successfully");
-        });
-      }, (err) => {
-
-      });
-    });
+      }
+    }
+    return sortedAssignments;
   }
 
-  function getMeetings(course, meetings){
-    return new Promise((resolve, reject) => {
-      var linkify = require('linkifyjs');
-      classroom.courses.announcements.list({
+  async function getCourseWork(course){
+    try{
+      var res = await classroom.courses.courseWork.list({
+        pageSize:50,
         courseId: course.id,
-        pageSize:5,
-      }, (err, res) => {
-        let announcements = res.data.announcements;
-
-        // console.log(course.name, announcements);
-        for(let announcement of announcements){
-          if(announcement.text.includes('.zoom.')){
-            let meetingLink =  linkify.find(announcement.text)[0];
-            let meeting = {courseName: course.name, link: meetingLink};
-            meetings.data.unshift(meeting);
-            break;
-          }
-          else if(announcement.text.includes('meet.google.com')){
-            let meetingLink =  linkify.find(announcement.text)[0];
-            let meeting = {courseName: course.name, link: meetingLink};
-            meetings.data.unshift(meeting);
-            break;
-          }
-        }
-        loaded.courseMeetings++;
-        if(loaded.courseMeetings == coursesLength){
-          resolve('loaded all courses');
-        }
-        else{
-          reject('didnt load all courses yet')
-        }
-      });
-    });
+      })
+      if(res && res.body.length > 5){
+        let courseWork = res.result.courseWork;
+        // console.log('Number of coursework in ' + course.name, courseWork.length);
+        return courseWork;
+      }
+    }
+    catch(err){
+      console.log(err);
+    }
   }
 
-  function getAssignments(course, assignments, counter){
-    return new Promise((resolve, reject) => {
+  async function labelCourseWork(course, work){
       try{
-        classroom.courses.courseWork.list({
-          pageSize:20,
-          courseId: course.id,
-        }, (err, res) => {
-          if(err){
-            return console.log("could not find course:" + err);
-          }
-          let courseWork = res.data.courseWork;
-          console.log('Number of coursework in ' + course.name, courseWork.length);
-          let loadedCourseWork = {count: 0};
-          courseWork.forEach((work) =>{
-            filterCourseWork(course, work, assignments, courseWork, loadedCourseWork).then((res) => {
-                // console.log(res);
-                loaded.courseAssignments++;
-                if(loaded.courseAssignments == coursesLength){
-                  resolve('loaded all courses');
-                }
-                else{
-                  reject('didnt load all courses yet');
-                }
-              }, (err) => {
-                // console.log(err);
-              }
-            );
-          });
-        });
-      }
-      catch(err){
-        console.log(err);
-        reject('didnt load all courses yet');
-      }
-    });
-  }
-
-  function filterCourseWork(course, work, assignments, allCourseWork, counter){
-    return new Promise((resolve, reject) =>{
-      try{
-        classroom.courses.courseWork.studentSubmissions.list({
+        var res = await classroom.courses.courseWork.studentSubmissions.list({
           courseId: course.id,
           courseWorkId: work.id
-        }, (err, res) => {
-          if(err){
-            return console.log("could not find course submissions:" + err);
-          }
-          let submission = res.data.studentSubmissions[0];
+        });
+        if(res){
+          let submission = res.result.studentSubmissions[0];
           let assignment = {
             courseName: course.name,
             courseWorkId:work.id,
@@ -293,37 +215,17 @@ function getAccessToken(oAuth2Client, callback, credentials){
             link: work.alternateLink,
             dueDate: work.dueDate,
             materials: work.materials,
+            submitted: alreadySubmitted(submission)
           }
-          if(!alreadySubmitted(submission)){
-            if(assignment.dueDate == undefined){
-              assignments.noDueDate.push(assignment);
-            }
-            else{
-              assignment.dueTime = utcToLocalTime(work);
-              if(stillDue(assignment)){
-                // insert into due json based on date;
-                sortBasedOnTime(assignments.due, assignment);
-              }
-              else if(validPastDate(assignment.dueDate)){
-                // insert into past json based on date
-                sortBasedOnTime(assignments.pastDue, assignment);
-              }
-            }
+          if(assignment.dueDate != undefined){
+            assignment.dueTime = utcToLocalTime(work);
           }
-          counter.count++;
-          if(counter.count == allCourseWork.length){
-            resolve('loaded all course work');
-          }
-          else{
-            reject("Coursework loaded so far::: " + counter.count + ' in ' + course.name);
-          }
-        });
+          return assignment;
+        }
       }
       catch(err){
           console.log(err);
-          reject();
       }
-      });
   }
 
 
@@ -349,83 +251,3 @@ function getAccessToken(oAuth2Client, callback, credentials){
     return true;
   }
 
-  export function sortBasedOnTime(arr, inserted){
-    if(arr.length){
-      for(let i = 0; i < arr.length; i++){
-        let item = arr[i];
-        if(compareDueDates(item, inserted)){
-          arr.splice(i, 0, inserted);
-          break;
-        }
-      }
-    }
-    else{
-      arr.push(inserted);
-    }
-  }
-
-  // checks if an assignment is still due
-  function stillDue(assignment){
-    let date = new Date();
-    let year = date.getFullYear();
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-
-    let currentDate = {dueDate: {
-                          year:year,
-                          month:month,
-                          day:day
-                        },
-                        dueTime: {
-                          hours: date.getHours(),
-                          minutes: date.getMinutes()
-                        }
-                      }
-
-    return compareDueDates(assignment, currentDate);
-  }
-
-
-  function simplifyAssignmentDueDate(assignment){
-    let dueDate = {
-      year: assignment.dueDate.year,
-      month: assignment.dueDate.month,
-      day: assignment.dueDate.day,
-      hours: assignment.dueTime.hours,
-      minutes: assignment.dueTime.hours,
-    }
-    return dueDate
-  }
-  // compares if due date1 is due after duedate2
-  function compareDueDates(assignment, assignment2){
-    let dueDate1 = simplifyAssignmentDueDate(assignment);
-    let duedate2 = simplifyAssignmentDueDate(assignment2);
-
-    if(dueDate1.year < duedate2.year){
-      return false;
-    }
-    if(dueDate1.month < duedate2.month){
-      return false;
-    }
-    if(dueDate1.day < duedate2.day && dueDate1.month == duedate2.month){
-      return false;
-    }
-    if(dueDate1.hours < duedate2.hours){
-      return false;
-    }
-    if(dueDate1.hours == duedate2.hours && dueDate1.minutes < duedate2.minutes){
-      return false;
-    }
-    return true;
-  }
-
-  function validPastDate(pastDate){
-    let date = new Date();
-    let year = date.getFullYear()
-    let month = date.getMonth()
-    let day = date.getDay();
-    if((year - pastDate.year < 2) && ((year - pastDate.year) * 4 + month < 12)){
-      return true;
-    }
-    return false;
-  }

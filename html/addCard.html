@@ -1,5 +1,6 @@
 <!-- Add Card -->
-
+<link rel="stylesheet" href="frameworks/jquery-weekdays.css">
+<script src="frameworks/jquery-weekdays.js"></script>
 <div class="modal fade" id="addCard" tabindex="-1" role="dialog" aria-labelledby="addCardLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
@@ -41,6 +42,8 @@
           </div>
           <button type="button small" class="btn btn-secondary" data-dismiss="modal" id="assignmentsSubmit">Submit assignment</button>
         </div>
+
+
         <div class="mt-2" id="meetingsForm">
           <div id="meetingCourseRadios"  class="form-group">
             <!-- Auto filled by JS -->
@@ -52,8 +55,8 @@
             <small id="meetingTitleHelp" class="form-text text-muted">The name of your meeting.</small>
           </div>
           <div class="form-group">
-            <label for="meetingDateNotes">Meeting date:</label>
-            <input class="form-control" id="date" name="meetingDateSelector" name="date" placeholder="MM/DD/YYYY" type="text"/>
+            <label for="meetingDateNotes">Meeting Day:</label>
+            <div id="weekdays" name="meetingDateSelector" name="date"></div>
             <small id="meetingDateNotesHelp" class="form-text text-muted">What day is the meeting?</small>
           </div>
           <div class="form-group">
@@ -82,7 +85,7 @@
 
 <script type="module">
   import {returnCourses} from './js/classroom.js';
-  import {loadAssignmentForm, loadMeetingForm, loadCourses, assignmentSubmit, meetingSubmit} from './js/add.js';
+  import {loadAssignmentForm, loadMeetingForm, loadCourses, assignmentSubmit, meetingSubmit} from './js/form.js';
   import {datePicker} from './js/datePicker.js';
   $('#assignmentsSelector').click(() => {
     loadAssignmentForm();
@@ -97,17 +100,22 @@
     meetingSubmit();
   });
   $('.timepicker').timepicker({
-    timeFormat: 'h:mm p',
     interval: 60,
     defaultTime: '23:59',
     dynamic: false,
     dropdown: true,
     scrollbar: true
   });
+  $('#weekdays').weekdays({
+      singleSelect: true,
+  });
+
 
   // $('#submit').click(() => {
   //   //fill in
   // });
+
+
   loadAssignmentForm();
   loadCourses();
   datePicker();
