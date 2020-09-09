@@ -11,7 +11,7 @@
         <h5 class="mb-0">
           <button class="btn btn-link" data-toggle="collapse" v-bind:data-target="'#collapse' + item.courseWorkId" aria-expanded="false"  v-bind:aria-controls="'collapse + item.courseWorkId'">
             <h5 class="mt-2">{{ item.title }} &emsp;
-            <span v-if="item.weekday" class= "text-info">Meeting in: {{getDateFromToday(item)}}</span>
+            <span v-if="item.weekday || item.dueDate" class= "text-info">Meeting in: {{getDateFromToday(item)}}</span>
             </h5>
           </button>
         </h5>
@@ -33,6 +33,7 @@
           <p v-if="item.notes"><b>Meetings Details:</b> {{item.notes}}</p>
           <p v-else>No meetings details</p>
 
+          <p v-if="item.dueDate"><b>Meeting Date:</b> {{getDate(item)}}</p>
           <p v-if="item.weekday"><b>Next Meeting Time:</b> {{getDate(item)}}</p>
           <p  v-if="item.weekday"><b>Meets:</b> {{getWeekly(item)}}<b></b></p>
           <p v-if="item.announcement"><b>Classroom Meeting Announcement:</b>{{item.announcement}}</p>
@@ -69,7 +70,7 @@
     methods: {
       loadMeetings: function(){
           this.meetings = mergeMeetings()
-          // console.log(this.meetings)
+          console.log(this.meetings)
       },
 
       getDateFromToday: function(meetings){
