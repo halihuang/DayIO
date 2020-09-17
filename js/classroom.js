@@ -61,7 +61,7 @@ export function mergeMeetings(){
   }
   else{
     console.log('no assignments found at all');
-    reject(undefined);
+    return(undefined)
   }
 }
 
